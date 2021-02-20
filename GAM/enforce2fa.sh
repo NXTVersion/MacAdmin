@@ -97,3 +97,6 @@ if [[ "$(verifyNotificationCounter zz_testing@pepofaz.com)" < 1 ]]; then
 else
 	echo "False"
 fi
+
+## Notion Documentation ##
+# https://www.notion.so/nxtversion/Engineering-Enforce-GSuite-2FA-f6a9fa04388341d1b095f07a5df2c2f5
