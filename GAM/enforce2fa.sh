@@ -14,16 +14,13 @@ exceptionGroup="exception.2fa@pepofaz.com"
 notificationCap="5"
 
 ## Script Variables ##
-disabled2FAUsers=()
-enabled2FAUsers=()
+allusers=($(gam print users query "$workingOU")); allusers=( "${allusers[@]/primaryEmail}")
+disabled2FAUsers=() 	# Use function 2FADisabledArray
+enabled2FAUsers=()		# Use function 2FAEnabledArray
 
 # Create Array of Users with 2FA Enabled
 function 2FAEnabledArray {
 	echo "Creating array of users with 2FA Enabled..."
-
-	# Create Array of all users from Specific OU
-	allusers=($(gam print users query "$workingOU"))
-	allusers=( "${allusers[@]/primaryEmail}")
 
 	# Create Array of users who have 2FA Enabled
 	for user in ${allusers[@]}; do
@@ -34,28 +31,9 @@ function 2FAEnabledArray {
 	echo ""
 }
 
-# Remove Enabled 2FA Users from Exceptions Google Group
-function removeUsersExceptionGroup {
-	echo "Removing users with 2FA Enabled from Exception Group..."
-
-	# If users are in Exceptions Google Group; remove them
-	for users in ${enabled2FAUsers[@]}; do
-		if [[ `gam print groups member $users | grep $exceptionGroup` ]]; then
-			gam update group $exceptionGroup remove user $users
-		else
-			echo "$users is not in group $exceptionGroup."
-		fi
-	done
-	echo ""
-}
-
 # Create Array of Users with 2FA Disabled
 function 2FADisabledArray {
 	echo "Creating array of users with 2FA Disabled..."
-
-	# Create Array of all users from Specific OU
-	allusers=($(gam print users query "$workingOU"))
-	allusers=( "${allusers[@]/primaryEmail}")
 
 	# Create Array of users who have 2FA Disabled
 	for user in ${allusers[@]}; do
@@ -77,6 +55,21 @@ function addUsersExceptionGroup {
 			echo "$users is already in group $exceptionGroup."
 		else
 			gam update group $exceptionGroup add member user $users
+		fi
+	done
+	echo ""
+}
+
+# Remove Enabled 2FA Users from Exceptions Google Group
+function removeUsersExceptionGroup {
+	echo "Removing users with 2FA Enabled from Exception Group..."
+
+	# If users are in Exceptions Google Group; remove them
+	for users in ${enabled2FAUsers[@]}; do
+		if [[ `gam print groups member $users | grep $exceptionGroup` ]]; then
+			gam update group $exceptionGroup remove user $users
+		else
+			echo "$users is not in group $exceptionGroup."
 		fi
 	done
 	echo ""
