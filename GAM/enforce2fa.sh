@@ -3,7 +3,7 @@
 ## Script: Automation - Enforce 2FA.sh
 ## CreatedBy: Damian Finger
 ## CreationDate: 01/26/21
-## ModifiedDate: 04/26/21
+## ModifiedDate: 01/26/21
 ## Purpose: Purpose of this script is to automate Google Workspace 2FA Enforcement with little End User interruption.
 ## Documentation: https://www.notion.so/nxtversion/Engineering-Enforce-GSuite-2FA-f6a9fa04388341d1b095f07a5df2c2f5
 ##### END OF HEADER #####
@@ -47,10 +47,10 @@ function 2FADisabledArray {
 
 # Return Custom Schema Notifiation Counter
 function verifyNotificationCounter {
-	echo `gam info user $1 | grep "2FA_Notifications_Sent:" | sed 's/.*2FA_Notifications_Sent: //'```
+	echo `gam info user $1 | grep "2FA_Notifications" | sed 's/.*2FA_Notifications: //'`
 }
 
-# Add Disabled 2FA Users to Exceptions Google Group
+# Add Disabled 2FA Users to Exceptions Google Group (Verify Notification Counter)
 function addUsersExceptionGroup {
 	echo "Adding users with 2FA Disabled to Exception Group..."
 
@@ -59,11 +59,21 @@ function addUsersExceptionGroup {
 
 	# If users have 2FA Disabled; verify Notification Counter
 	for users in ${disabled2FAUsers[@]}; do
-		if [[ "$(verifyNotificationCounter $users)" < $notificationCap ]]
-		if [[ `gam print groups member $users | grep $exceptionGroup` ]]; then
-			echo "$users is already in group $exceptionGroup."
-		else
+		# If disabled 2FA User has not been notified & is not in Exception Group; add to exception group.
+		if [[ "$(verifyNotificationCounter $users)" < $notificationCap
+		&& ! `gam print groups member $users | grep $exceptionGroup` ]]; then
+			echo "$users notifictation counter is less than $notificationCap & is not a member of $exceptionGroup."
 			gam update group $exceptionGroup add member user $users
+
+		# If disabled 2FA User has been notified & is in Exception Group; remove from exception group.
+		elif [[ "$(verifyNotificationCounter $users)" > $notificationCap
+		&& `gam print groups member $users | grep $exceptionGroup` ]]; then
+			echo "$users notificaiton counter is greater than $notificationCap & member needs to be removed from $exceptionGroup."
+			gam update group $exceptionGroup remove user $users
+
+		# Else disabled 2FA User hs not been notified & is already in Exception Group; do nothing
+		else
+			echo "$users notification counter is less than $notificationCap & is already a member of $exceptionGroup."
 		fi
 	done
 	echo ""
@@ -72,6 +82,9 @@ function addUsersExceptionGroup {
 # Remove Enabled 2FA Users from Exceptions Google Group
 function removeUsersExceptionGroup {
 	echo "Removing users with 2FA Enabled from Exception Group..."
+
+	echo "Updating 2FAEnabledArray..."
+	2FAEnabledArray
 
 	# If users are in Exceptions Google Group; remove them
 	for users in ${enabled2FAUsers[@]}; do
@@ -89,6 +102,7 @@ function removeUsersExceptionGroup {
 #removeUsersExceptionGroup
 #2FADisabledArray
 #addUsersExceptionGroup
+#gam update user zz_testing Automation.2FA_Notifications 0
 if [[ "$(verifyNotificationCounter zz_testing@pepofaz.com)" < 1 ]]; then
 	echo "True"
 else
