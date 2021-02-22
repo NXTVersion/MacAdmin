@@ -5,6 +5,7 @@
 ## CreationDate: 01/26/21
 ## ModifiedDate: 04/26/21
 ## Purpose: Purpose of this script is to automate Google Workspace 2FA Enforcement with little End User interruption.
+## Documentation: https://www.notion.so/nxtversion/Engineering-Enforce-GSuite-2FA-f6a9fa04388341d1b095f07a5df2c2f5
 ##### END OF HEADER #####
 #########################
 
@@ -44,9 +45,17 @@ function 2FADisabledArray {
 	echo ""
 }
 
+# Return Custom Schema Notifiation Counter
+function verifyNotificationCounter {
+	echo `gam info user $1 | grep "2FA_Notifications_Sent:" | sed 's/.*2FA_Notifications_Sent: //'```
+}
+
 # Add Disabled 2FA Users to Exceptions Google Group
 function addUsersExceptionGroup {
 	echo "Adding users with 2FA Disabled to Exception Group..."
+
+	echo "Updating 2FADisabledArray..."
+	2FADisabledArray
 
 	# If users have 2FA Disabled; verify Notification Counter
 	for users in ${disabled2FAUsers[@]}; do
@@ -75,11 +84,6 @@ function removeUsersExceptionGroup {
 	echo ""
 }
 
-# Return Custom Schema Notifiation Counter
-function verifyNotificationCounter {
-	echo `gam info user $1 | grep "2FA_Notifications_Sent:" | sed 's/.*2FA_Notifications_Sent: //'```
-}
-
 ## Main Body ##
 #2FAEnabledArray
 #removeUsersExceptionGroup
@@ -90,6 +94,3 @@ if [[ "$(verifyNotificationCounter zz_testing@pepofaz.com)" < 1 ]]; then
 else
 	echo "False"
 fi
-
-## Notion Documentation ##
-# https://www.notion.so/nxtversion/Engineering-Enforce-GSuite-2FA-f6a9fa04388341d1b095f07a5df2c2f5
