@@ -15,7 +15,7 @@
 function VARIABLES {
 	# Editable Variables
 	docPath="/Users/Shared"		#Path to store Signature Template & Users CSV
-	usersOU="/PEPofAZ/Users"	#OU containing active users
+	usersOU="/PE/Users"	#OU containing active users
 }
 
 function BACKUP {
@@ -34,9 +34,9 @@ function CREATEDOCS {
 	{
 		echo "{Name}"
 		echo "{Title}"
-		echo "People Empowering People of AZ, Inc. (formerly Deaf Access of Arizona)"
-		echo "2428 E Apache Blvd. Ste. 123 | Tempe, AZ 85281"
-		echo "P 480-999-3323 | F 480-999-3324 | C {workphone}"
+		echo "Company Name"
+		echo "Company Address"
+		echo "P 480-999- | F 480-94 | C {workphone}"
 		echo "{email}"
 	} >"$docPath"/Automation-GAM-Signature.txt
 }
